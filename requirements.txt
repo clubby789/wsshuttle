@@ -1,1 +1,3 @@
 pywinrm==0.4.2
+# Use my fork of requests-ntlm to support NTLM hash authentication
+git+git://github.com/clubby789/requests-ntlm@pyspnego
