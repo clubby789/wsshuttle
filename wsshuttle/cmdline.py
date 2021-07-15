@@ -1,5 +1,6 @@
 import argparse
 import getpass
+import re
 
 from .listener import WsshuttleListener
 
@@ -15,7 +16,23 @@ def main() -> int:
     parser.add_argument("-m", "--mask", required=True)
     args = parser.parse_args()
 
-    if args.password is None and args.hash is None:
+    if args.hash and args.password:
+        print("Only one of --hash and --password may be specified")
+        return -1
+
+    if args.hash is not None:
+        ntlm = args.hash.lower()
+        if re.match("[a-z0-9]{32}"):
+            args.password = "0" * 32 + ":" + ntlm
+        elif re.match(":[a-z0-9]{32}"):
+            args.password = "0" * 32 + ntlm
+        elif re.match("[a-z0-9]{32}:[a-z0-9]{32}"):
+            args.password = ntlm
+        else:
+            print("Invalid hash format")
+            return -1
+
+    if args.password is None:
         args.password = getpass.getpass()
 
     listener = WsshuttleListener(username=args.username, password=args.password,
